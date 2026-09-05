@@ -6,17 +6,25 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
+        // این migration جایگزین 0001_01_01_000000_create_users_table.php پیش‌فرض لاراول است.
+        // اگر پروژه از صفر شروع می‌شود، محتوای فایل create_users_table پیش‌فرض را
+        // با این نسخه جایگزین کنید (به‌جای اجرای یک migration جدا برای users).
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('email')->unique();
+
+            $table->string('mobile', 11)->unique();       // شماره موبایل، شناسه اصلی ورود
+            $table->timestamp('mobile_verified_at')->nullable();
+
+            $table->string('email')->nullable()->unique();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+
+            $table->string('password')->nullable();        // nullable برای پشتیبانی از ورود با OTP در آینده
+
+            $table->boolean('is_active')->default(true);
+
             $table->rememberToken();
             $table->timestamps();
         });
@@ -37,13 +45,10 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
+        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('users');
     }
 };

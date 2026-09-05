@@ -19,7 +19,9 @@ class SymbolGroupController extends Controller
 
     public function create(): View
     {
-        return view('admin.symbol-groups.create');
+        $parentGroups = SymbolGroup::orderBy('name')->get();
+
+        return view('admin.symbol-groups.create', compact('parentGroups'));
     }
 
     public function store(Request $request): RedirectResponse

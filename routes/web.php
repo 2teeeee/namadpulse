@@ -73,5 +73,8 @@ Route::middleware('auth')->group(function () {
         Route::resource('symbol-groups', SymbolGroupController::class)
             ->only(['index', 'create', 'store', 'update', 'destroy'])
             ->parameters(['symbol-groups' => 'symbolGroup']);
+
+        Route::resource('symbols', \App\Http\Controllers\Admin\SymbolController::class)
+            ->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
     });
 });

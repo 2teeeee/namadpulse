@@ -43,6 +43,10 @@
                     <i class="bi bi-diagram-3"></i>
                     گروه نمادها
                 </a>
+                <a href="{{ route('admin.symbols.index') }}" class="app-nav__item {{ request()->routeIs('admin.symbols.*') ? 'is-active' : '' }}">
+                    <i class="bi bi-diagram-3"></i>
+                    مدیریت نمادها
+                </a>
             @endif
         @endauth
     </nav>

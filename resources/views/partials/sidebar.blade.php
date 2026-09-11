@@ -1,6 +1,8 @@
 <aside class="app-sidebar" id="appSidebar">
     <div class="app-sidebar__brand">
-        <div class="app-sidebar__brand-mark">جس</div>
+        <div class="">
+            <img src="{{asset("img/logo.jpg")}}" alt="نماد پالس" width="48" class="rounded">
+        </div>
         <div class="app-sidebar__brand-text">
             جلالی سهام
             <span class="app-sidebar__brand-sub">پایش و آلرت بازار بورس</span>
@@ -20,6 +22,15 @@
         <a href="{{ route('symbols.index') }}" class="app-nav__item {{ request()->routeIs('symbols.*') ? 'is-active' : '' }}">
             <i class="bi bi-graph-up-arrow"></i>
             نمادها
+        </a>
+        <a href="{{ route('symbols.pivots') }}" class="app-nav__item {{ request()->routeIs('symbols.pivots') ? 'is-active' : '' }}">
+            <i class="bi bi-table"></i>
+            پیووت پوینت نمادها
+        </a>
+
+        <a href="{{ route('symbols.screener') }}" class="app-nav__item {{ request()->routeIs('watchlists.*') ? 'is-active' : '' }}">
+            <i class="bi bi-star"></i>
+            جستجوی واچ لیست
         </a>
 
         <div class="app-nav__label">معاملات</div>
@@ -46,6 +57,10 @@
                 <a href="{{ route('admin.symbols.index') }}" class="app-nav__item {{ request()->routeIs('admin.symbols.*') ? 'is-active' : '' }}">
                     <i class="bi bi-diagram-3"></i>
                     مدیریت نمادها
+                </a>
+                <a href="{{ route('admin.imports.index') }}" class="app-nav__item {{ request()->routeIs('admin.imports.*') ? 'is-active' : '' }}">
+                    <i class="bi bi-cloud-arrow-down"></i>
+                    Import قیمت‌ها
                 </a>
             @endif
         @endauth

@@ -74,4 +74,20 @@ class WatchlistController extends Controller
     {
         abort_unless($watchlist->user_id === auth()->id(), 403);
     }
+
+    public function attachMany(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'watchlist_id' => ['required', 'exists:watchlists,id'],
+            'symbol_ids' => ['required', 'array', 'min:1'],
+            'symbol_ids.*' => ['exists:symbols,id'],
+        ]);
+
+        $watchlist = Watchlist::findOrFail($validated['watchlist_id']);
+        $this->authorizeOwnership($watchlist);
+
+        $watchlist->symbols()->syncWithoutDetaching($validated['symbol_ids']);
+
+        return back()->with('success', count($validated['symbol_ids']) . ' نماد به واچ‌لیست «' . $watchlist->name . '» اضافه شد.');
+    }
 }

@@ -47,15 +47,21 @@ class SymbolPivotLevel extends Model
         return $this->belongsTo(Symbol::class);
     }
 
-    /** درصد فاصله‌ی یک سطح نسبت به آخرین قیمت، برای نمایش مثل نمونه‌ی «2,147  21.56 %» */
+    /** درصد فاصله‌ی یک سطح (pp/r1/r2/r3/s1/s2/s3) نسبت به آخرین قیمت */
     public function distancePercentFrom(float $lastPrice, string $level): ?float
     {
         $value = $this->{$level} ?? null;
 
-        if (is_null($value) || (float) $value === 0.0) {
+        if (is_null($value)) {
             return null;
         }
 
-        return round((($lastPrice - (float) $value) / (float) $value) * 100, 2);
+        return \App\Support\PercentDistanceCalculator::between((float) $value, $lastPrice);
+    }
+
+    /** آیا آخرین قیمت بالای این سطح قرار دارد؟ */
+    public function isAboveLevel(float $lastPrice, string $level): bool
+    {
+        return \App\Support\PercentDistanceCalculator::isAboveLevel((float) $this->{$level}, $lastPrice);
     }
 }

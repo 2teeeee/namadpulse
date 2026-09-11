@@ -69,7 +69,9 @@
     <div>
         <div class="guest-card">
             <div class="guest-brand">
-                <div class="guest-brand-mark">جس</div>
+                <div class="">
+                    <img src="{{asset("img/logo.jpg")}}" alt="نماد پالس" width="64">
+                </div>
                 <div class="guest-brand-text">جلالی سهام</div>
             </div>
 

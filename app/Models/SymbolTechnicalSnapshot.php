@@ -62,4 +62,26 @@ class SymbolTechnicalSnapshot extends Model
 
         return (float) $fastValue > (float) $slowValue;
     }
+
+    /** درصد فاصله‌ی یک میانگین (مثلاً price_ma_20, ema_100, ema_200) نسبت به آخرین قیمت */
+    public function percentVsLast(string $field, float $lastPrice): ?float
+    {
+        $value = $this->{$field} ?? null;
+
+        if (is_null($value)) {
+            return null;
+        }
+
+        return \App\Support\PercentDistanceCalculator::between((float) $value, $lastPrice);
+    }
+
+    /** آیا آخرین قیمت بالای این میانگین است؟ */
+    public function isAboveField(string $field, float $lastPrice): bool
+    {
+        if (is_null($this->{$field} ?? null)) {
+            return false;
+        }
+
+        return \App\Support\PercentDistanceCalculator::isAboveLevel((float) $this->{$field}, $lastPrice);
+    }
 }

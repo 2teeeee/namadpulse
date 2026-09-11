@@ -1,11 +1,13 @@
 <?php
 
+use App\Http\Controllers\Admin\ImportController;
 use App\Http\Controllers\Admin\SymbolGroupController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AlertLogController;
 use App\Http\Controllers\AlertRuleController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ScreenerController;
 use App\Http\Controllers\SymbolController;
 use App\Http\Controllers\WatchlistController;
 use Illuminate\Support\Facades\Route;
@@ -53,6 +55,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/watchlists/{watchlist}', [WatchlistController::class, 'show'])->name('watchlists.show');
 
     Route::get('/symbols', [SymbolController::class, 'index'])->name('symbols.index');
+    Route::get('/symbols/pivots', [SymbolController::class, 'pivots'])->name('symbols.pivots');
+    Route::get('/symbols/screener', [ScreenerController::class, 'index'])->name('symbols.screener');
+    Route::post('/symbols/screener/add-to-watchlist', [ScreenerController::class, 'addToWatchlist'])->name('symbols.screener.add-to-watchlist');
     Route::get('/symbols/{symbol}', [SymbolController::class, 'show'])->name('symbols.show');
 
     Route::resource('alert-rules', AlertRuleController::class)
@@ -71,10 +76,12 @@ Route::middleware('auth')->group(function () {
             ->only(['index', 'edit', 'update']);
 
         Route::resource('symbol-groups', SymbolGroupController::class)
-            ->only(['index', 'create', 'store', 'update', 'destroy'])
             ->parameters(['symbol-groups' => 'symbolGroup']);
 
-        Route::resource('symbols', \App\Http\Controllers\Admin\SymbolController::class)
-            ->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
+        Route::resource('symbols', \App\Http\Controllers\Admin\SymbolController::class);
+
+        Route::get('imports', [ImportController::class, 'index'])->name('imports.index');
+        Route::post('imports', [ImportController::class, 'store'])->name('imports.store');
+        Route::get('imports/{importRun}/status', [ImportController::class, 'status'])->name('imports.status');
     });
 });

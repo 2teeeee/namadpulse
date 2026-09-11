@@ -88,7 +88,7 @@ class PivotPointCalculator
         $low = (float) $rows->min('low');
         $close = (float) $rows->last()->final;
 
-        $pp = ($high + $low + $close) / 3;
+        $pp = ($high + $low + $close * 2) / 4;
 
         $label = $startYear === $endYear && $startMonth === $endMonth
             ? sprintf('%04d/%02d', $startYear, $startMonth)
@@ -102,10 +102,10 @@ class PivotPointCalculator
             'pp' => round($pp, 2),
             'r1' => round((2 * $pp) - $low, 2),
             'r2' => round($pp + ($high - $low), 2),
-            'r3' => round($high + 2 * ($pp - $low), 2),
+            'r3' => round(2 * ($pp - $low) + $high, 2),
             's1' => round((2 * $pp) - $high, 2),
             's2' => round($pp - ($high - $low), 2),
-            's3' => round($low - 2 * ($high - $pp), 2),
+            's3' => round(2 * ($pp - $high) + $low, 2),
         ];
     }
 }

@@ -8,110 +8,92 @@ use Illuminate\Support\Collection;
 class ZigZagCalculator
 {
     public function __construct(
-        private readonly float $thresholdPercent = 0,
+        private readonly MacdCalculator $macdCalculator = new MacdCalculator(),
     ) {
     }
 
     /**
+     * نقاط ماژور بر اساس رژیم MACD:
+     * - وقتی MACD مثبت است، بالاترین قیمت آن بازه کاندیدای «سقف» است.
+     * - وقتی MACD منفی است، پایین‌ترین قیمت آن بازه کاندیدای «کف» است.
+     * - نقطه با تغییر علامت MACD (مثبت↔منفی) تایید و ثبت می‌شود.
+     *
      * @return Collection<int, array{point_date: \Illuminate\Support\Carbon, jalali_date: string, price: float, type: string}>
      */
     public function calculate(Symbol $symbol): Collection
     {
-        $threshold = $this->thresholdPercent ?: (float) config('indicators.zigzag_threshold_percent');
+        // کل تاریخچه برای EMA/MACD دقیق لازم است (نه فقط بازه‌ی نمایش)
+        $rows = $symbol->dailyPrices()->orderBy('trade_date')->get(['trade_date', 'jalali_date', 'final']);
 
-        $latest = $symbol->dailyPrices()->orderByDesc('trade_date')->first();
-
-        if (! $latest) {
-            return collect();
+        if ($rows->count() < 30) {
+            return collect(); // داده‌ی کافی برای MACD(12,26) وجود ندارد
         }
 
-        [$currentYear] = explode('/', $latest->jalali_date);
+        [$currentYear] = explode('/', $rows->last()->jalali_date);
         $startOfPreviousYear = sprintf('%04d/01/01', ((int) $currentYear) - 1);
 
-        $rows = $symbol->dailyPrices()
-            ->where('jalali_date', '>=', $startOfPreviousYear)
-            ->orderBy('trade_date')
-            ->get(['trade_date', 'jalali_date', 'final']);
+        $closes = $rows->pluck('final')->map(fn ($v) => (float) $v);
+        $macdSeries = $this->macdCalculator->calculateSeries($closes);
 
-        if ($rows->count() < 2) {
+        $startIndex = null;
+        foreach ($macdSeries as $i => $value) {
+            if (! is_null($value)) {
+                $startIndex = $i;
+                break;
+            }
+        }
+
+        if (is_null($startIndex)) {
             return collect();
         }
 
-        return $this->findSwingPoints($rows, $threshold);
+        $pivots = $this->findRegimePivots($rows, $closes, $macdSeries, $startIndex);
+
+        // فقط نقاطی که از ابتدای سال قبل به بعد هستند نمایش داده می‌شوند
+        // (ولی رژیم MACD از قبل از آن بازه هم برای دقت بیشتر در نظر گرفته شده)
+        return $pivots->filter(fn (array $p) => $p['jalali_date'] >= $startOfPreviousYear)->values();
     }
 
-    private function findSwingPoints(Collection $rows, float $threshold): Collection
+    private function findRegimePivots(Collection $rows, Collection $closes, array $macdSeries, int $startIndex): Collection
     {
-        $rows = $rows->values();
-        $n = $rows->count();
+        $pivots = collect();
 
-        // مرحله‌ی اول: پیدا کردن جهت حرکت اولیه (اولین نوسان بزرگ‌تر از آستانه)
-        $basePrice = (float) $rows[0]->final;
-        $trend = null;
+        $regime = $macdSeries[$startIndex] >= 0 ? 'positive' : 'negative';
+        $extremeIndex = $startIndex;
+        $extremePrice = $closes[$startIndex];
 
-        for ($i = 1; $i < $n; $i++) {
-            $change = (((float) $rows[$i]->final - $basePrice) / $basePrice) * 100;
+        for ($i = $startIndex + 1; $i < $rows->count(); $i++) {
+            $macd = $macdSeries[$i] ?? null;
 
-            if ($change >= $threshold) {
-                $trend = 'up';
-                break;
+            if (is_null($macd)) {
+                continue;
             }
 
-            if ($change <= -$threshold) {
-                $trend = 'down';
-                break;
+            $price = $closes[$i];
+            $currentRegime = $macd >= 0 ? 'positive' : 'negative';
+
+            if ($currentRegime === $regime) {
+                if ($regime === 'positive' && $price > $extremePrice) {
+                    $extremeIndex = $i;
+                    $extremePrice = $price;
+                } elseif ($regime === 'negative' && $price < $extremePrice) {
+                    $extremeIndex = $i;
+                    $extremePrice = $price;
+                }
+
+                continue;
             }
+
+            // تغییر علامت MACD -> تایید اکسترمم رژیم قبلی به‌عنوان نقطه ماژور
+            $pivots->push($this->point($rows[$extremeIndex], $regime === 'positive' ? 'peak' : 'trough'));
+
+            $regime = $currentRegime;
+            $extremeIndex = $i;
+            $extremePrice = $price;
         }
 
-        if (is_null($trend)) {
-            return collect(); // در کل بازه هیچ نوسان ماژوری اتفاق نیفتاده
-        }
-
-        $pivots = collect([
-            $this->point($rows[0], $trend === 'up' ? 'trough' : 'peak'),
-        ]);
-
-        $extremeIndex = 0;
-        $extremePrice = $basePrice;
-
-        for ($i = 1; $i < $n; $i++) {
-            $price = (float) $rows[$i]->final;
-
-            if ($trend === 'up') {
-                if ($price > $extremePrice) {
-                    $extremeIndex = $i;
-                    $extremePrice = $price;
-                    continue;
-                }
-
-                $drop = (($extremePrice - $price) / $extremePrice) * 100;
-
-                if ($drop >= $threshold) {
-                    $pivots->push($this->point($rows[$extremeIndex], 'peak'));
-                    $trend = 'down';
-                    $extremeIndex = $i;
-                    $extremePrice = $price;
-                }
-            } else {
-                if ($price < $extremePrice) {
-                    $extremeIndex = $i;
-                    $extremePrice = $price;
-                    continue;
-                }
-
-                $rise = (($price - $extremePrice) / $extremePrice) * 100;
-
-                if ($rise >= $threshold) {
-                    $pivots->push($this->point($rows[$extremeIndex], 'trough'));
-                    $trend = 'up';
-                    $extremeIndex = $i;
-                    $extremePrice = $price;
-                }
-            }
-        }
-
-        // آخرین اکسترمم (هنوز با نوسان بعدی تایید نشده) هم به‌عنوان نقطه‌ی جاری اضافه می‌شود
-        $pivots->push($this->point($rows[$extremeIndex], $trend === 'up' ? 'peak' : 'trough'));
+        // اکسترمم رژیم جاری هنوز با تغییر علامت تایید نشده، ولی به‌عنوان نقطه‌ی تازه نمایش داده می‌شود
+        $pivots->push($this->point($rows[$extremeIndex], $regime === 'positive' ? 'peak' : 'trough'));
 
         return $pivots;
     }

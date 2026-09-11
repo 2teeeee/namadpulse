@@ -1,34 +1,75 @@
-NamadPulse 📈
+# Nuxt Minimal Starter
 
-NamadPulse is a smart stock market monitoring and watchlist platform designed to help investors discover, track, and analyze important symbols in the Iranian stock market.
+Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
 
-The goal of NamadPulse is to turn large amounts of market data into a simple and actionable watchlist, allowing users to focus on the symbols that matter most.
+## Setup
 
-🚀 Features
-📋 Smart stock watchlists
-🔎 Market and symbol screening
-📊 Market data analysis
-📈 Symbol performance monitoring
-🔔 Custom alerts and notifications
-⭐ Favorite symbols
-🧠 Intelligent symbol scoring and filtering
-📱 Responsive and user-friendly interface
-🎯 Goal
+Make sure to install dependencies:
 
-NamadPulse aims to provide a simple and powerful tool for monitoring the stock market without requiring users to manually track hundreds of symbols.
+```bash
+# npm
+npm install
 
-Instead of searching through the entire market, users can create and manage focused watchlists and monitor the symbols that are most relevant to them.
+# pnpm
+pnpm install
 
-🏗️ Project Status
+# yarn
+yarn install
 
-NamadPulse is currently under active development.
+# bun
+bun install
+```
 
-New features, market indicators, screening capabilities, and automation tools will be added progressively.
+## Development Server
 
-⚠️ Disclaimer
+Start the development server on `http://localhost:3000`:
 
-NamadPulse is an analytical and monitoring tool and does not provide financial advice or guarantee investment returns.
+```bash
+# npm
+npm run dev
 
-Users are responsible for their own investment decisions.
+# pnpm
+pnpm dev
 
-NamadPulse — Feel the Pulse of the Market.
+# yarn
+yarn dev
+
+# bun
+bun run dev
+```
+
+## Production
+
+Build the application for production:
+
+```bash
+# npm
+npm run build
+
+# pnpm
+pnpm build
+
+# yarn
+yarn build
+
+# bun
+bun run build
+```
+
+Locally preview production build:
+
+```bash
+# npm
+npm run preview
+
+# pnpm
+pnpm preview
+
+# yarn
+yarn preview
+
+# bun
+bun run preview
+```
+
+Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.

@@ -16,12 +16,7 @@ interface DashboardData {
     top_losers: SymbolListItem[]
 }
 
-const authStore = useAuthStore()
 const { $api } = useNuxtApp()
-
-if (!authStore.user) {
-    await authStore.fetchMe()
-}
 
 const { data, pending } = await useAsyncData('dashboard', () => $api<{ data: DashboardData }>('/dashboard'))
 const dashboard = computed(() => data.value?.data)

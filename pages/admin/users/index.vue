@@ -7,9 +7,10 @@ interface RoleOption { id: number; name: string; label: string }
 const { $api } = useNuxtApp()
 
 const route = useRoute()
+const router = useRouter()
 const page = computed(() => Number(route.query.page) || 1)
 
-const { data, refresh } = await useAsyncData(
+const { data, refresh, pending } = await useAsyncData(
     () => `admin-users-${page.value}`,
     () => $api<{ data: UserItem[]; meta: { current_page: number; last_page: number } }>('/admin/users', {
       query: { page: page.value },
@@ -55,6 +56,9 @@ async function saveUser() {
     <div class="card">
         <div class="card-header">فهرست کاربران</div>
         <div class="table-responsive">
+          <LoadingSpinner v-if="pending" size="sm" />
+
+          <template v-else>
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
@@ -82,6 +86,7 @@ async function saveUser() {
                     </tr>
                 </tbody>
             </table>
+          </template>
         </div>
     </div>
 
@@ -119,11 +124,10 @@ async function saveUser() {
         </div>
     </div>
 
-    <nav v-if="meta && meta.last_page > 1" class="mt-3">
-      <ul class="pagination">
-        <li v-for="p in meta.last_page" :key="p" class="page-item" :class="{ active: p === meta.current_page }">
-          <NuxtLink class="page-link" :to="{ query: { page: p } }">{{ p }}</NuxtLink>
-        </li>
-      </ul>
-    </nav>
+    <Pagination
+        v-if="meta"
+        :current-page="meta.current_page"
+        :last-page="meta.last_page"
+        @change="(p) => router.push({ query: { ...route.query, page: p } })"
+    />
 </template>

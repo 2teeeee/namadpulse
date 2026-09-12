@@ -12,6 +12,7 @@ interface SymbolListItem {
 
 const { $api } = useNuxtApp()
 const route = useRoute()
+const router = useRouter()
 
 const page = computed(() => Number(route.query.page) || 1)
 
@@ -38,6 +39,9 @@ const meta = computed(() => data.value?.meta)
     <div class="card">
         <div class="card-header">فهرست نمادها</div>
         <div class="table-responsive">
+          <LoadingSpinner v-if="pending" size="sm" />
+
+          <template v-else>
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
@@ -49,10 +53,7 @@ const meta = computed(() => data.value?.meta)
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-if="pending">
-                        <td colspan="5" class="text-center text-muted py-4">در حال بارگذاری...</td>
-                    </tr>
-                    <tr v-else-if="symbols.length === 0">
+                    <tr v-if="symbols.length === 0">
                         <td colspan="5" class="text-center text-muted py-4">نمادی یافت نشد.</td>
                     </tr>
                     <tr v-for="symbol in symbols" :key="symbol.id">
@@ -74,14 +75,15 @@ const meta = computed(() => data.value?.meta)
                     </tr>
                 </tbody>
             </table>
+
+          </template>
         </div>
     </div>
 
-    <nav v-if="meta && meta.last_page > 1" class="mt-3">
-        <ul class="pagination">
-            <li v-for="p in meta.last_page" :key="p" class="page-item" :class="{ active: p === meta.current_page }">
-                <NuxtLink class="page-link" :to="{ query: { page: p } }">{{ p }}</NuxtLink>
-            </li>
-        </ul>
-    </nav>
+    <Pagination
+        v-if="meta"
+        :current-page="meta.current_page"
+        :last-page="meta.last_page"
+        @change="(p) => router.push({ query: { ...route.query, page: p } })"
+    />
 </template>

@@ -12,6 +12,7 @@ interface AlertLogItem {
 
 const { $api } = useNuxtApp()
 const route = useRoute()
+const router = useRouter()
 
 const page = computed(() => Number(route.query.page) || 1)
 
@@ -69,11 +70,11 @@ const channelLabels: Record<string, string> = { telegram: 'تلگرام', sms: '
         </div>
     </div>
 
-    <nav v-if="meta && meta.last_page > 1" class="mt-3">
-        <ul class="pagination">
-            <li v-for="p in meta.last_page" :key="p" class="page-item" :class="{ active: p === meta.current_page }">
-                <NuxtLink class="page-link" :to="{ query: { page: p } }">{{ p }}</NuxtLink>
-            </li>
-        </ul>
-    </nav>
+    <Pagination
+        v-if="meta"
+        :current-page="meta.current_page"
+        :last-page="meta.last_page"
+        @change="(p) => router.push({ query: { ...route.query, page: p } })"
+    />
+
 </template>

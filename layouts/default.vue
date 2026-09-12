@@ -1,16 +1,26 @@
 <script setup lang="ts">
 const authStore = useAuthStore()
 const route = useRoute()
+const router = useRouter()
+const isSidebarOpen = ref(false)
 
 async function handleLogout() {
     await authStore.logout()
     await navigateTo('/login')
 }
+
+function toggleSidebar() {
+  isSidebarOpen.value = !isSidebarOpen.value
+}
+
+watch(() => route.path, () => {
+  isSidebarOpen.value = false
+})
 </script>
 
 <template>
     <div class="app-shell">
-        <aside class="app-sidebar">
+      <aside class="app-sidebar" :class="{ 'is-open': isSidebarOpen }">
             <div class="app-sidebar__brand">
                 <div class="app-sidebar__brand-mark">جس</div>
                 <div class="app-sidebar__brand-text">
@@ -81,9 +91,30 @@ async function handleLogout() {
             </div>
         </aside>
 
+        <div v-if="isSidebarOpen" class="sidebar-overlay" @click="isSidebarOpen = false"></div>
+
         <div class="app-main">
             <header class="app-topbar">
-                <div></div>
+                <div class="d-flex align-items-center gap-2">
+                  <button
+                      type="button"
+                      class="btn btn-sm btn-outline-secondary sidebar-toggle"
+                      @click="toggleSidebar"
+                      aria-label="باز کردن منو"
+                  >
+                    <i class="bi bi-list"></i>
+                  </button>
+                  <button
+                      v-if="route.path !== '/dashboard'"
+                      type="button"
+                      class="btn btn-sm btn-outline-secondary"
+                      @click="router.back()"
+                  >
+                    <i class="bi bi-arrow-right"></i>
+                    بازگشت
+                  </button>
+                  <div v-else></div>
+                </div>
                 <div class="d-flex align-items-center gap-3" v-if="authStore.user">
                     <div class="app-topbar__user">
                         <div class="app-topbar__user-avatar">

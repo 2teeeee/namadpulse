@@ -13,6 +13,10 @@ export default defineNuxtConfig({
   app: {
     head: {
       htmlAttrs: { lang: 'fa', dir: 'rtl' },
+      pageTransition: { name: 'page', mode: 'out-in' },
+      head: {
+        // ... محتوای فعلی head دست‌نخورده می‌ماند
+      },
       title: 'جلالی سهام',
       link: [
         { rel: 'stylesheet', href: 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css' },

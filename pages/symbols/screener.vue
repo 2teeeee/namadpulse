@@ -238,5 +238,12 @@ async function addToWatchlist() {
                 </li>
             </ul>
         </nav>
+
+        <Pagination
+            v-if="meta"
+            :current-page="meta.current_page"
+            :last-page="meta.last_page"
+            @change="runSearch"
+        />
     </div>
 </template>

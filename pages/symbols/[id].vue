@@ -25,7 +25,7 @@ interface SymbolDetail {
 const route = useRoute()
 const { $api } = useNuxtApp()
 
-const { data } = await useAsyncData(
+const { data, pending } = await useAsyncData(
     `symbol-${route.params.id}`,
     () => $api<{ data: SymbolDetail }>(`/symbols/${route.params.id}`)
 )
@@ -53,7 +53,10 @@ function formatHomt(value: number | null | undefined): string {
 </script>
 
 <template>
-    <template v-if="symbol">
+    <template v-if="pending">
+      <LoadingSpinner />
+    </template>
+    <template v-else-if="symbol">
         <div class="page-header">
             <div>
                 <h1 class="page-header__title">{{ symbol.ticker }} — {{ symbol.name }}</h1>

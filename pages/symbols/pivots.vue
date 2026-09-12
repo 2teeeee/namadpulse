@@ -100,6 +100,8 @@ function changePeriod(value: string) {
     <div class="card">
         <div class="card-header">سطوح پیووت پوینت {{ periodOptions[period] }}</div>
         <div class="table-responsive">
+          <LoadingSpinner v-if="pending" size="sm" />
+          <template v-else>
             <table class="table table-hover align-middle mb-0 tabular-nums">
                 <thead class="table-light">
                     <tr>
@@ -109,10 +111,7 @@ function changePeriod(value: string) {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-if="pending">
-                        <td :colspan="9" class="text-center text-muted py-4">در حال بارگذاری...</td>
-                    </tr>
-                    <tr v-else-if="rows.length === 0">
+                    <tr v-if="rows.length === 0">
                         <td :colspan="9" class="text-center text-muted py-4">نمادی یافت نشد.</td>
                     </tr>
                     <tr v-for="row in rows" :key="row.id">
@@ -134,14 +133,14 @@ function changePeriod(value: string) {
                     </tr>
                 </tbody>
             </table>
+          </template>
         </div>
     </div>
 
-    <nav v-if="meta && meta.last_page > 1" class="mt-3">
-        <ul class="pagination">
-            <li v-for="p in meta.last_page" :key="p" class="page-item" :class="{ active: p === meta.current_page }">
-                <NuxtLink class="page-link" :to="{ query: { ...route.query, page: p } }">{{ p }}</NuxtLink>
-            </li>
-        </ul>
-    </nav>
+    <Pagination
+        v-if="meta"
+        :current-page="meta.current_page"
+        :last-page="meta.last_page"
+        @change="(p) => router.push({ query: { ...route.query, page: p } })"
+    />
 </template>
